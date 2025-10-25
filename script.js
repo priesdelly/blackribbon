@@ -13,6 +13,23 @@
  * ╚═══════════════════════════════════════════════════════════════════════════╝
  */
 
+// Notice Banner Toggle Function
+function toggleNotice() {
+    const content = document.getElementById('noticeContent');
+    const toggle = document.getElementById('noticeToggle');
+    const banner = document.getElementById('noticeBanner');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        toggle.textContent = '▼';
+        banner.classList.remove('collapsed');
+    } else {
+        content.style.display = 'none';
+        toggle.textContent = '▶';
+        banner.classList.add('collapsed');
+    }
+}
+
 class MemorialOverlay {
     constructor() {
         this.canvas = document.getElementById('mainCanvas');

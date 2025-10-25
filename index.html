@@ -72,8 +72,33 @@
 -->
 <body>
     <div class="container">
-
-        <main>
+        <!-- Important Notice -->
+        <div class="notice-banner" id="noticeBanner">
+            <div class="notice-header" onclick="toggleNotice()">
+                <div class="notice-icon">📢</div>
+                <div class="notice-header-text">
+                    <span class="notice-title-inline">ประกาศแจ้งให้ทราบ</span>
+                    <span class="notice-title-inline-en">Important Notice</span>
+                </div>
+                <div class="notice-toggle" id="noticeToggle">▼</div>
+            </div>
+            <div class="notice-content" id="noticeContent">
+                                <p class="notice-text">
+                    ณ​ เวลาที่จัดทำเว็บไซต์นี้ ยังไม่ปรากฏประกาศใดๆ อย่างเป็นทางการจากทางราชการ
+                    เกี่ยวกับการใช้สัญลักษณ์ริบบิ้นโบว์ดำเพื่อแสดงความไว้อาลัย
+                    ดังนั้น การตัดสินใจใช้โบว์ดำจึงเป็นดุลยพินิจส่วนบุคคล
+                    จึงขอความกรุณาใช้วิจารณญาณประกอบการพิจารณาอย่างรอบคอบและเหมาะสม
+                    เพื่อให้เหมาะสมกับการแสดงความไว้อาลัย
+                </p>
+                <p class="notice-subtitle">
+                    As of this website's creation, there has been no official announcement from governmental authorities
+                    regarding the use of black ribbon symbols to express condolences.
+                    Therefore, the decision to use a black ribbon remains a matter of personal discretion.
+                    We kindly request that you exercise careful judgment and consideration
+                    to ensure appropriateness in expressing condolences.
+                </p>
+            </div>
+        </div>        <main>
             <div class="canvas-container">
                 <canvas id="mainCanvas" width="800" height="600"></canvas>
                 <div id="ribbonOverlay" class="ribbon-overlay">
