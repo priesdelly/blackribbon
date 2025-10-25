@@ -122,8 +122,8 @@ class MemorialOverlay {
         if (!file) return;
 
         // Check if it's an image file (including HEIC)
-        const isValidImage = file.type.match('image.*') || 
-                           file.name.toLowerCase().endsWith('.heic') || 
+        const isValidImage = file.type.match('image.*') ||
+                           file.name.toLowerCase().endsWith('.heic') ||
                            file.name.toLowerCase().endsWith('.heif');
 
         if (!isValidImage) {
@@ -135,18 +135,18 @@ class MemorialOverlay {
             let imageBlob = file;
 
             // Convert HEIC/HEIF to JPEG if needed
-            if (file.type === 'image/heic' || file.type === 'image/heif' || 
-                file.name.toLowerCase().endsWith('.heic') || 
+            if (file.type === 'image/heic' || file.type === 'image/heif' ||
+                file.name.toLowerCase().endsWith('.heic') ||
                 file.name.toLowerCase().endsWith('.heif')) {
-                
+
                 console.log('Converting HEIC/HEIF to JPEG...');
-                
+
                 // Check if heic2any is available
                 if (typeof heic2any === 'undefined') {
                     alert('HEIC files are not supported in this browser. Please convert to JPG or PNG first.');
                     return;
                 }
-                
+
                 // Show loading message
                 const loadingMsg = document.createElement('div');
                 loadingMsg.id = 'heic-loading';
