@@ -23,12 +23,39 @@ function toggleNotice() {
         content.style.display = 'block';
         toggle.textContent = '▼';
         banner.classList.remove('collapsed');
+        // Save expanded state
+        localStorage.setItem('noticeBannerCollapsed', 'false');
     } else {
         content.style.display = 'none';
         toggle.textContent = '▶';
         banner.classList.add('collapsed');
+        // Save collapsed state
+        localStorage.setItem('noticeBannerCollapsed', 'true');
     }
 }
+
+// Initialize Notice Banner State
+function initializeNoticeState() {
+    const content = document.getElementById('noticeContent');
+    const toggle = document.getElementById('noticeToggle');
+    const banner = document.getElementById('noticeBanner');
+
+    // Get saved state from localStorage (default to false = expanded)
+    const isCollapsed = localStorage.getItem('noticeBannerCollapsed') === 'true';
+
+    if (isCollapsed) {
+        content.style.display = 'none';
+        toggle.textContent = '▶';
+        banner.classList.add('collapsed');
+    } else {
+        content.style.display = 'block';
+        toggle.textContent = '▼';
+        banner.classList.remove('collapsed');
+    }
+}
+
+// Initialize notice state when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeNoticeState);
 
 class MemorialOverlay {
     constructor() {
@@ -524,7 +551,6 @@ console.log('%c╚════════════════════�
 console.log('%c\n👨‍💻 Developer Info:', 'color: #2c2c2c; font-weight: bold; font-size: 14px;');
 console.log('%c   GitHub: https://github.com/priesdelly', 'color: #4a4a4a;');
 console.log('%c   Project: Black Ribbon Memorial Overlay', 'color: #4a4a4a;');
-console.log('%c   Version: 1.0.0', 'color: #4a4a4a;');
 console.log('%c   Built: October 2025\n', 'color: #4a4a4a;');
 
 // Cookie Consent Management
