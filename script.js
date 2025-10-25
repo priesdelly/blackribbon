@@ -533,20 +533,20 @@ class MemorialOverlay {
 
 // Console signature - For developers who inspect the code
 console.log('%c╔═══════════════════════════════════════════════════════════════════╗', 'color: #2c2c2c; font-weight: bold;');
-console.log('%c║      Black Ribbon Memorial Overlay - Web Application             ║', 'color: #2c2c2c; font-weight: bold;');
+console.log('%c║      Black Ribbon Memorial Overlay - Web Application              ║', 'color: #2c2c2c; font-weight: bold;');
 console.log('%c║                  Powered by Priesdelly                            ║', 'color: #2c2c2c; font-weight: bold;');
 console.log('%c║              © 2025 - github.com/priesdelly                       ║', 'color: #2c2c2c; font-weight: bold;');
 console.log('%c╠═══════════════════════════════════════════════════════════════════╣', 'color: #2c2c2c; font-weight: bold;');
 console.log('%c║                                                                   ║', 'color: #666;');
 console.log('%c║  Thank you for using this tool respectfully 🕯️                    ║', 'color: #666;');
-console.log('%c║  All processing happens locally - Your privacy is protected      ║', 'color: #666;');
+console.log('%c║  All processing happens locally - Your privacy is protected       ║', 'color: #666;');
 console.log('%c║                                                                   ║', 'color: #666;');
-console.log('%c║  If you find this useful, consider:                              ║', 'color: #888;');
-console.log('%c║  • Giving credit when sharing                                    ║', 'color: #888;');
-console.log('%c║  • Contributing to the project on GitHub                         ║', 'color: #888;');
-console.log('%c║  • Sharing with others who might need it                         ║', 'color: #888;');
+console.log('%c║  If you find this useful, consider:                               ║', 'color: #888;');
+console.log('%c║  • Giving credit when sharing                                     ║', 'color: #888;');
+console.log('%c║  • Contributing to the project on GitHub                          ║', 'color: #888;');
+console.log('%c║  • Sharing with others who might need it                          ║', 'color: #888;');
 console.log('%c║                                                                   ║', 'color: #666;');
-console.log('%c║  Created with love and respect for those we remember            ║', 'color: #666;');
+console.log('%c║  Created with love and respect for those we remember              ║', 'color: #666;');
 console.log('%c╚═══════════════════════════════════════════════════════════════════╝', 'color: #2c2c2c; font-weight: bold;');
 console.log('%c\n👨‍💻 Developer Info:', 'color: #2c2c2c; font-weight: bold; font-size: 14px;');
 console.log('%c   GitHub: https://github.com/priesdelly', 'color: #4a4a4a;');
