@@ -509,7 +509,19 @@ class CookieConsent {
     }
 
     loadGoogleAnalytics() {
-        // TODO: Add Google Analytics tracking ID here
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QY0L4VQEEK');
+
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-QY0L4VQEEK';
+
+        document.head.appendChild(script);
+
+        console.log('Google Analytics would be loaded here');
     }
 }
 
