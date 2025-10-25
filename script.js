@@ -265,14 +265,13 @@ class MemorialOverlay {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         if (this.backgroundImage) {
-            // Apply grayscale filter if enabled
-            if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
-                this.ctx.filter = `grayscale(${this.grayscaleIntensity}%)`;
-            } else {
-                this.ctx.filter = 'none';
-            }
-
+            // Draw image first
             this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+
+            // Apply grayscale filter if enabled using pixel manipulation (iOS compatible)
+            if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
+                this.applyGrayscaleFilter();
+            }
         } else {
             // Draw placeholder
             this.ctx.fillStyle = '#fafafa';
@@ -287,9 +286,40 @@ class MemorialOverlay {
             this.ctx.font = '16px Arial, sans-serif';
             this.ctx.fillText('(อัปโหลดรูปภาพเพื่อเริ่มต้น)', this.canvas.width / 2, this.canvas.height / 2 + 15);
         }
+    }
 
-        // Reset filter for ribbon
-        this.ctx.filter = 'none';
+    applyGrayscaleFilter() {
+        try {
+            // Get image data
+            const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            const data = imageData.data;
+            const intensity = this.grayscaleIntensity / 100;
+
+            // Process pixels
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // Calculate grayscale value using luminosity method
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                // Blend original color with grayscale based on intensity
+                data[i] = r + (gray - r) * intensity;     // Red
+                data[i + 1] = g + (gray - g) * intensity; // Green
+                data[i + 2] = b + (gray - b) * intensity; // Blue
+                // Alpha channel (data[i + 3]) remains unchanged
+            }
+
+            // Put the modified image data back
+            this.ctx.putImageData(imageData, 0, 0);
+        } catch (error) {
+            console.error('Error applying grayscale filter:', error);
+            // Fallback to CSS filter method if pixel manipulation fails
+            this.ctx.filter = `grayscale(${this.grayscaleIntensity}%)`;
+            this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.filter = 'none';
+        }
     }
 
     updateRibbonSize(value) {
@@ -458,18 +488,43 @@ class MemorialOverlay {
         try {
             // Create a temporary canvas for the final image
             const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: false });
+            const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
 
             // Set canvas size to match the main canvas (full resolution)
             tempCanvas.width = this.canvas.width;
             tempCanvas.height = this.canvas.height;
 
-            // Draw background image with grayscale filter
-            if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
-                tempCtx.filter = `grayscale(${this.grayscaleIntensity}%)`;
-            }
+            // Draw background image first (no filter)
             tempCtx.drawImage(this.backgroundImage, 0, 0, tempCanvas.width, tempCanvas.height);
-            tempCtx.filter = 'none'; // Reset filter
+
+            // Apply grayscale using pixel manipulation (iOS compatible)
+            if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
+                try {
+                    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                    const data = imageData.data;
+                    const intensity = this.grayscaleIntensity / 100;
+
+                    for (let i = 0; i < data.length; i += 4) {
+                        // Calculate grayscale using luminosity method
+                        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+
+                        // Blend original color with grayscale based on intensity
+                        data[i] = data[i] * (1 - intensity) + gray * intensity;     // R
+                        data[i + 1] = data[i + 1] * (1 - intensity) + gray * intensity; // G
+                        data[i + 2] = data[i + 2] * (1 - intensity) + gray * intensity; // B
+                        // Alpha channel (i + 3) remains unchanged
+                    }
+
+                    tempCtx.putImageData(imageData, 0, 0);
+                } catch (pixelError) {
+                    console.warn('Pixel manipulation failed, using filter fallback:', pixelError);
+                    // Fallback to filter method if pixel manipulation fails
+                    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    tempCtx.filter = `grayscale(${this.grayscaleIntensity}%)`;
+                    tempCtx.drawImage(this.backgroundImage, 0, 0, tempCanvas.width, tempCanvas.height);
+                    tempCtx.filter = 'none';
+                }
+            }
 
             // Calculate ribbon size based on canvas dimensions
             const canvasMinDimension = Math.min(tempCanvas.width, tempCanvas.height);
