@@ -48,6 +48,9 @@
     <meta name="theme-color" content="#2c2c2c">
     <link rel="canonical" content="https://blackribbon.priesdelly.com/">
 
+    <!-- HEIC to JPEG conversion library -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    
     <link rel="stylesheet" href="styles.css">
 </head>
 <!--
@@ -109,7 +112,7 @@
             <div class="controls-panel">
                 <div class="control-group">
                     <h3>Image Upload <span class="subtitle">(อัปโหลดรูปภาพ)</span></h3>
-                    <input type="file" id="imageUpload" accept="image/jpeg,image/jpg,image/png,image/webp">
+                    <input type="file" id="imageUpload" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif">
                     <button id="clearImage" class="btn-secondary">Clear Image <span class="btn-subtitle">(ล้างรูป)</span></button>
                 </div>
 
