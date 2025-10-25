@@ -59,7 +59,7 @@ main {
 
 #mainCanvas {
     max-width: 100%;
-    max-height: 600px;
+    max-height: 80vh; /* Allow larger images, up to 80% of viewport height */
     border: 2px solid #a0a0a0;
     border-radius: 8px;
     display: block;

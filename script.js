@@ -22,6 +22,7 @@ class MemorialOverlay {
 
         // State
         this.backgroundImage = null;
+        this.ribbonImageData = null; // Store ribbon as data URL to avoid CORS issues
         this.ribbonData = {
             x: 15,
             y: 445, // Start near bottom (canvas default is 600px height)
@@ -34,10 +35,30 @@ class MemorialOverlay {
         this.grayscaleEnabled = false;
         this.grayscaleIntensity = 100;
 
+        // Load ribbon image as data URL to avoid CORS/taint issues
+        this.loadRibbonAsDataURL();
+
         this.initializeEventListeners();
         this.updateCanvas();
         this.updateRibbonOverlayPosition(); // Initialize overlay position first
         this.updateRibbonDisplay();
+    }
+
+    async loadRibbonAsDataURL() {
+        try {
+            const response = await fetch('assets/black-ribbon-01.svg');
+            const svgText = await response.text();
+            const blob = new Blob([svgText], { type: 'image/svg+xml' });
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                this.ribbonImageData = e.target.result;
+            };
+
+            reader.readAsDataURL(blob);
+        } catch (error) {
+            console.error('Error loading ribbon image:', error);
+        }
     }
 
     initializeEventListeners() {
@@ -91,6 +112,8 @@ class MemorialOverlay {
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
+            // Set crossOrigin before setting src to avoid CORS issues
+            img.crossOrigin = 'anonymous';
             img.onload = () => {
                 this.backgroundImage = img;
                 this.resizeCanvasToImage();
@@ -102,7 +125,7 @@ class MemorialOverlay {
                 }, 10);
                 document.getElementById('downloadBtn').disabled = false;
             };
-            img.src = e.target.result;
+            img.src = e.target.result; // This is already a data URL, so no CORS issues
         };
         reader.readAsDataURL(file);
     }
@@ -119,23 +142,9 @@ class MemorialOverlay {
     resizeCanvasToImage() {
         if (!this.backgroundImage) return;
 
-        const maxWidth = 800;
-        const maxHeight = 600;
-
-        let { width, height } = this.backgroundImage;
-
-        // Calculate aspect ratio
-        const aspectRatio = width / height;
-
-        if (width > maxWidth) {
-            width = maxWidth;
-            height = width / aspectRatio;
-        }
-
-        if (height > maxHeight) {
-            height = maxHeight;
-            width = height * aspectRatio;
-        }
+        // Use original image size - no downsizing
+        const width = this.backgroundImage.width;
+        const height = this.backgroundImage.height;
 
         this.canvas.width = width;
         this.canvas.height = height;
@@ -337,49 +346,83 @@ class MemorialOverlay {
 
     downloadImage() {
         if (!this.backgroundImage) {
-            alert('Please upload an image first');
+            alert('กรุณาอัปโหลดรูปภาพก่อน / Please upload an image first');
             return;
         }
 
-        // Create a temporary canvas for the final image
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-
-        // Set canvas size to match the main canvas
-        tempCanvas.width = this.canvas.width;
-        tempCanvas.height = this.canvas.height;
-
-        // Draw background image with grayscale filter
-        if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
-            tempCtx.filter = `grayscale(${this.grayscaleIntensity}%)`;
+        if (!this.ribbonImageData) {
+            alert('กรุณารอสักครู่ ระบบกำลังโหลดรูปโบว์ / Please wait, loading ribbon image...');
+            return;
         }
-        tempCtx.drawImage(this.backgroundImage, 0, 0, tempCanvas.width, tempCanvas.height);
 
-        // Calculate responsive ribbon size for export
-        const canvasMinDimension = Math.min(tempCanvas.width, tempCanvas.height);
-        const responsiveBaseSize = canvasMinDimension * 0.15;
-        const actualRibbonSize = this.ribbonData.scale * responsiveBaseSize;
+        try {
+            // Create a temporary canvas for the final image
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: false });
 
-        // Draw ribbon overlay
-        tempCtx.save();
-        tempCtx.translate(this.ribbonData.x + (actualRibbonSize / 2), this.ribbonData.y + (actualRibbonSize / 2));
-        const scaleRatio = actualRibbonSize / 120; // 120 is the base SVG size
-        tempCtx.scale(scaleRatio, scaleRatio);
+            // Set canvas size to match the main canvas (full resolution)
+            tempCanvas.width = this.canvas.width;
+            tempCanvas.height = this.canvas.height;
 
-        // Create ribbon image element for drawing
-        const ribbonImg = new Image();
-        ribbonImg.onload = () => {
-            tempCtx.drawImage(ribbonImg, -60, -60, 120, 120);
-            tempCtx.restore();
+            // Draw background image with grayscale filter
+            if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
+                tempCtx.filter = `grayscale(${this.grayscaleIntensity}%)`;
+            }
+            tempCtx.drawImage(this.backgroundImage, 0, 0, tempCanvas.width, tempCanvas.height);
+            tempCtx.filter = 'none'; // Reset filter
 
-            // Download the image
-            const link = document.createElement('a');
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            link.download = `memorial-${timestamp}.png`;
-            link.href = tempCanvas.toDataURL('image/png');
-            link.click();
-        };
-        ribbonImg.src = this.ribbonImage.src;
+            // Calculate ribbon size based on canvas dimensions
+            const canvasMinDimension = Math.min(tempCanvas.width, tempCanvas.height);
+            const responsiveBaseSize = canvasMinDimension * 0.15;
+            const actualRibbonSize = this.ribbonData.scale * responsiveBaseSize;
+
+            // Use ribbon position in canvas coordinates (stored in ribbonData)
+            const ribbonX = this.ribbonData.x;
+            const ribbonY = this.ribbonData.y;
+
+            // Load ribbon from data URL and draw
+            const ribbonImg = new Image();
+            ribbonImg.onload = () => {
+                // Draw ribbon overlay
+                tempCtx.save();
+                tempCtx.translate(ribbonX + (actualRibbonSize / 2), ribbonY + (actualRibbonSize / 2));
+                const scaleRatio = actualRibbonSize / 120; // 120 is the base SVG size
+                tempCtx.scale(scaleRatio, scaleRatio);
+                tempCtx.drawImage(ribbonImg, -60, -60, 120, 120);
+                tempCtx.restore();
+
+                // Convert to blob for download
+                tempCanvas.toBlob((blob) => {
+                    if (blob) {
+                        // Use Blob for download (better for large files)
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+                        link.download = `memorial-${timestamp}.png`;
+                        link.href = url;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        // Cleanup
+                        setTimeout(() => URL.revokeObjectURL(url), 100);
+                    } else {
+                        throw new Error('Failed to create blob from canvas');
+                    }
+                }, 'image/png');
+            };
+
+            ribbonImg.onerror = () => {
+                throw new Error('Failed to load ribbon image for download');
+            };
+
+            // Use the pre-loaded data URL (no CORS issues)
+            ribbonImg.src = this.ribbonImageData;
+
+        } catch (error) {
+            console.error('Error downloading image:', error);
+            alert('ไม่สามารถดาวน์โหลดรูปภาพได้ กรุณาลองใหม่อีกครั้ง\nError downloading image. Please try again.\n\n' + error.message);
+        }
     }
 
     updateValueDisplays() {
