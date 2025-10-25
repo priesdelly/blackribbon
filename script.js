@@ -1,0 +1,460 @@
+/**
+ * ╔═══════════════════════════════════════════════════════════════════════════╗
+ * ║                  Black Ribbon Memorial Overlay                            ║
+ * ║                     Powered by Priesdelly                                 ║
+ * ║                  © 2025 - github.com/priesdelly                           ║
+ * ╠═══════════════════════════════════════════════════════════════════════════╣
+ * ║  A respectful tool for adding memorial ribbons to images                  ║
+ * ║  Built with privacy in mind - All processing happens client-side          ║
+ * ║  No data is collected, stored, or transmitted to any server               ║
+ * ║                                                                            ║
+ * ║  Created with love and respect for those we remember 🕯️                   ║
+ * ║  May this tool help preserve precious memories with dignity               ║
+ * ╚═══════════════════════════════════════════════════════════════════════════╝
+ */
+
+class MemorialOverlay {
+    constructor() {
+        this.canvas = document.getElementById('mainCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.ribbonImage = document.getElementById('ribbonImage');
+        this.ribbonOverlay = document.getElementById('ribbonOverlay');
+
+        // State
+        this.backgroundImage = null;
+        this.ribbonData = {
+            x: 15,
+            y: 445, // Start near bottom (canvas default is 600px height)
+            width: 60,
+            height: 60,
+            scale: 1.5 // Default size 1.5x larger for better visibility
+        };
+        this.isDragging = false;
+        this.dragOffset = { x: 0, y: 0 };
+        this.grayscaleEnabled = false;
+        this.grayscaleIntensity = 100;
+
+        this.initializeEventListeners();
+        this.updateCanvas();
+        this.updateRibbonOverlayPosition(); // Initialize overlay position first
+        this.updateRibbonDisplay();
+    }
+
+    initializeEventListeners() {
+        // Image upload
+        document.getElementById('imageUpload').addEventListener('change', (e) => this.handleImageUpload(e));
+        document.getElementById('clearImage').addEventListener('click', () => this.clearImage());
+
+        // Ribbon controls
+        document.getElementById('ribbonSize').addEventListener('input', (e) => this.updateRibbonSize(e.target.value));
+
+        // Grayscale controls
+        document.getElementById('grayscaleToggle').addEventListener('change', (e) => this.toggleGrayscale(e.target.checked));
+        document.getElementById('grayscaleIntensity').addEventListener('input', (e) => this.updateGrayscaleIntensity(e.target.value));
+
+        // Download
+        document.getElementById('downloadBtn').addEventListener('click', () => this.downloadImage());
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            // Update overlay position first, then ribbon display
+            this.updateRibbonOverlayPosition();
+            this.updateRibbonDisplay();
+        });
+
+        // Ribbon drag functionality
+        this.ribbonImage.addEventListener('mousedown', (e) => this.startDrag(e));
+        document.addEventListener('mousemove', (e) => this.drag(e));
+        document.addEventListener('mouseup', () => this.endDrag());
+
+        // Touch events for mobile
+        this.ribbonImage.addEventListener('touchstart', (e) => this.startDrag(e));
+        document.addEventListener('touchmove', (e) => this.drag(e));
+        document.addEventListener('touchend', () => this.endDrag());
+
+        // Mouse wheel for ribbon scaling
+        this.ribbonImage.addEventListener('wheel', (e) => this.handleWheel(e));
+
+        // Update value displays
+        this.updateValueDisplays();
+    }
+
+    handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.match('image.*')) {
+            alert('Please select a valid image file (JPG, PNG, or WebP)');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                this.backgroundImage = img;
+                this.resizeCanvasToImage();
+                this.updateCanvas();
+                // Delay to ensure canvas is fully rendered
+                setTimeout(() => {
+                    this.updateRibbonOverlayPosition();
+                    this.updateRibbonDisplay();
+                }, 10);
+                document.getElementById('downloadBtn').disabled = false;
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    clearImage() {
+        this.backgroundImage = null;
+        this.canvas.width = 800;
+        this.canvas.height = 600;
+        this.updateCanvas();
+        document.getElementById('downloadBtn').disabled = true;
+        document.getElementById('imageUpload').value = '';
+    }
+
+    resizeCanvasToImage() {
+        if (!this.backgroundImage) return;
+
+        const maxWidth = 800;
+        const maxHeight = 600;
+
+        let { width, height } = this.backgroundImage;
+
+        // Calculate aspect ratio
+        const aspectRatio = width / height;
+
+        if (width > maxWidth) {
+            width = maxWidth;
+            height = width / aspectRatio;
+        }
+
+        if (height > maxHeight) {
+            height = maxHeight;
+            width = height * aspectRatio;
+        }
+
+        this.canvas.width = width;
+        this.canvas.height = height;
+
+        // Reset ribbon position to bottom-left corner (in canvas coordinates)
+        // Position will be automatically converted to display coordinates by updateRibbonDisplay
+        const canvasMinDimension = Math.min(width, height);
+        const responsiveBaseSize = canvasMinDimension * 0.15;
+        const ribbonSize = this.ribbonData.scale * responsiveBaseSize;
+
+        this.ribbonData.x = 20; // Left side with 20px margin
+        this.ribbonData.y = Math.max(0, height - ribbonSize - 20); // Bottom with 20px margin
+
+        this.updateRibbonDisplay();
+    }
+
+    updateCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (this.backgroundImage) {
+            // Apply grayscale filter if enabled
+            if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
+                this.ctx.filter = `grayscale(${this.grayscaleIntensity}%)`;
+            } else {
+                this.ctx.filter = 'none';
+            }
+
+            this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            // Draw placeholder
+            this.ctx.fillStyle = '#fafafa';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            this.ctx.fillStyle = '#666';
+            this.ctx.font = '20px Arial, sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('Upload an image to begin', this.canvas.width / 2, this.canvas.height / 2 - 15);
+
+            this.ctx.fillStyle = '#888';
+            this.ctx.font = '16px Arial, sans-serif';
+            this.ctx.fillText('(อัปโหลดรูปภาพเพื่อเริ่มต้น)', this.canvas.width / 2, this.canvas.height / 2 + 15);
+        }
+
+        // Reset filter for ribbon
+        this.ctx.filter = 'none';
+    }
+
+    updateRibbonSize(value) {
+        this.ribbonData.scale = value / 100;
+        // Update display and constrain position after size change
+        this.updateRibbonDisplay();
+        document.getElementById('sizeValue').textContent = value + '%';
+    }
+
+
+    updateRibbonOverlayPosition() {
+        // Position the ribbon overlay to match the canvas position exactly
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const containerRect = this.canvas.parentElement.getBoundingClientRect();
+
+        // Update ribbon overlay dimensions to match DISPLAYED canvas size (not internal resolution)
+        this.ribbonOverlay.style.width = canvasRect.width + 'px';
+        this.ribbonOverlay.style.height = canvasRect.height + 'px';
+
+        this.ribbonOverlay.style.position = 'absolute';
+        this.ribbonOverlay.style.left = (canvasRect.left - containerRect.left) + 'px';
+        this.ribbonOverlay.style.top = (canvasRect.top - containerRect.top) + 'px';
+        this.ribbonOverlay.style.pointerEvents = 'none';
+        this.ribbonOverlay.style.zIndex = '10';
+    }
+
+    updateRibbonDisplay() {
+        // Get the DISPLAYED canvas size (what user sees on screen)
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const displayWidth = canvasRect.width;
+        const displayHeight = canvasRect.height;
+
+        // Calculate responsive base size based on DISPLAYED canvas dimensions
+        const canvasMinDimension = Math.min(displayWidth, displayHeight);
+        const responsiveBaseSize = canvasMinDimension * 0.15; // 15% of displayed canvas smaller dimension
+        const size = this.ribbonData.scale * responsiveBaseSize;
+
+        // Calculate scale ratio between displayed size and internal canvas size
+        const scaleX = displayWidth / this.canvas.width;
+        const scaleY = displayHeight / this.canvas.height;
+
+        // Constrain ribbon position within DISPLAYED canvas bounds
+        const maxX = displayWidth - size;
+        const maxY = displayHeight - size;
+
+        // Convert stored position (in canvas coordinates) to display coordinates
+        const displayX = this.ribbonData.x * scaleX;
+        const displayY = this.ribbonData.y * scaleY;
+
+        // Constrain and convert back to canvas coordinates for storage
+        const constrainedDisplayX = Math.max(0, Math.min(displayX, maxX));
+        const constrainedDisplayY = Math.max(0, Math.min(displayY, maxY));
+
+        this.ribbonData.x = constrainedDisplayX / scaleX;
+        this.ribbonData.y = constrainedDisplayY / scaleY;
+
+        // Apply styles using display coordinates
+        this.ribbonImage.style.width = size + 'px';
+        this.ribbonImage.style.height = size + 'px';
+        this.ribbonImage.style.left = constrainedDisplayX + 'px';
+        this.ribbonImage.style.top = constrainedDisplayY + 'px';
+        this.ribbonImage.style.position = 'absolute';
+        this.ribbonImage.style.pointerEvents = 'auto';
+        this.ribbonImage.style.zIndex = '11';
+    }
+
+    toggleGrayscale(enabled) {
+        this.grayscaleEnabled = enabled;
+        const intensitySlider = document.getElementById('grayscaleIntensity');
+        intensitySlider.disabled = !enabled;
+        this.updateCanvas();
+    }
+
+    updateGrayscaleIntensity(value) {
+        this.grayscaleIntensity = parseInt(value);
+        document.getElementById('intensityValue').textContent = value + '%';
+        this.updateCanvas();
+    }
+
+    startDrag(e) {
+        e.preventDefault();
+        this.isDragging = true;
+        this.ribbonImage.classList.add('dragging');
+
+        const rect = this.canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+        // Get current ribbon position in display coordinates
+        const ribbonRect = this.ribbonImage.getBoundingClientRect();
+        const overlayRect = this.ribbonOverlay.getBoundingClientRect();
+
+        this.dragOffset.x = clientX - ribbonRect.left;
+        this.dragOffset.y = clientY - ribbonRect.top;
+    }
+
+    drag(e) {
+        if (!this.isDragging) return;
+
+        e.preventDefault();
+        const overlayRect = this.ribbonOverlay.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+        // Calculate new position relative to overlay
+        const newX = clientX - overlayRect.left - this.dragOffset.x;
+        const newY = clientY - overlayRect.top - this.dragOffset.y;
+
+        // Get displayed canvas size
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const displayWidth = canvasRect.width;
+        const displayHeight = canvasRect.height;
+
+        // Calculate responsive ribbon size based on displayed size
+        const canvasMinDimension = Math.min(displayWidth, displayHeight);
+        const responsiveBaseSize = canvasMinDimension * 0.15;
+        const ribbonSize = this.ribbonData.scale * responsiveBaseSize;
+
+        // Constrain to displayed canvas bounds
+        const maxX = displayWidth - ribbonSize;
+        const maxY = displayHeight - ribbonSize;
+
+        const constrainedX = Math.max(0, Math.min(newX, maxX));
+        const constrainedY = Math.max(0, Math.min(newY, maxY));
+
+        // Convert to canvas coordinates for storage
+        const scaleX = displayWidth / this.canvas.width;
+        const scaleY = displayHeight / this.canvas.height;
+
+        this.ribbonData.x = constrainedX / scaleX;
+        this.ribbonData.y = constrainedY / scaleY;
+
+        this.updateRibbonDisplay();
+    }
+
+    endDrag() {
+        this.isDragging = false;
+        this.ribbonImage.classList.remove('dragging');
+    }
+
+    handleWheel(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -5 : 5;
+        const newScale = Math.max(0.1, Math.min(2, this.ribbonData.scale + delta / 100));
+        this.ribbonData.scale = newScale;
+
+        const sizeSlider = document.getElementById('ribbonSize');
+        sizeSlider.value = Math.round(newScale * 100);
+        this.updateRibbonSize(sizeSlider.value);
+
+        // Ensure ribbon stays within bounds after resizing
+        this.updateRibbonDisplay();
+    }
+
+    downloadImage() {
+        if (!this.backgroundImage) {
+            alert('Please upload an image first');
+            return;
+        }
+
+        // Create a temporary canvas for the final image
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Set canvas size to match the main canvas
+        tempCanvas.width = this.canvas.width;
+        tempCanvas.height = this.canvas.height;
+
+        // Draw background image with grayscale filter
+        if (this.grayscaleEnabled && this.grayscaleIntensity > 0) {
+            tempCtx.filter = `grayscale(${this.grayscaleIntensity}%)`;
+        }
+        tempCtx.drawImage(this.backgroundImage, 0, 0, tempCanvas.width, tempCanvas.height);
+
+        // Calculate responsive ribbon size for export
+        const canvasMinDimension = Math.min(tempCanvas.width, tempCanvas.height);
+        const responsiveBaseSize = canvasMinDimension * 0.15;
+        const actualRibbonSize = this.ribbonData.scale * responsiveBaseSize;
+
+        // Draw ribbon overlay
+        tempCtx.save();
+        tempCtx.translate(this.ribbonData.x + (actualRibbonSize / 2), this.ribbonData.y + (actualRibbonSize / 2));
+        const scaleRatio = actualRibbonSize / 120; // 120 is the base SVG size
+        tempCtx.scale(scaleRatio, scaleRatio);
+
+        // Create ribbon image element for drawing
+        const ribbonImg = new Image();
+        ribbonImg.onload = () => {
+            tempCtx.drawImage(ribbonImg, -60, -60, 120, 120);
+            tempCtx.restore();
+
+            // Download the image
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.download = `memorial-${timestamp}.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+        };
+        ribbonImg.src = this.ribbonImage.src;
+    }
+
+    updateValueDisplays() {
+        document.getElementById('sizeValue').textContent = Math.round(this.ribbonData.scale * 100) + '%';
+        document.getElementById('intensityValue').textContent = this.grayscaleIntensity + '%';
+    }
+}
+
+// Console signature - For developers who inspect the code
+console.log('%c╔═══════════════════════════════════════════════════════════════════╗', 'color: #2c2c2c; font-weight: bold;');
+console.log('%c║      Black Ribbon Memorial Overlay - Web Application             ║', 'color: #2c2c2c; font-weight: bold;');
+console.log('%c║                  Powered by Priesdelly                            ║', 'color: #2c2c2c; font-weight: bold;');
+console.log('%c║              © 2025 - github.com/priesdelly                       ║', 'color: #2c2c2c; font-weight: bold;');
+console.log('%c╠═══════════════════════════════════════════════════════════════════╣', 'color: #2c2c2c; font-weight: bold;');
+console.log('%c║                                                                   ║', 'color: #666;');
+console.log('%c║  Thank you for using this tool respectfully 🕯️                    ║', 'color: #666;');
+console.log('%c║  All processing happens locally - Your privacy is protected      ║', 'color: #666;');
+console.log('%c║                                                                   ║', 'color: #666;');
+console.log('%c║  If you find this useful, consider:                              ║', 'color: #888;');
+console.log('%c║  • Giving credit when sharing                                    ║', 'color: #888;');
+console.log('%c║  • Contributing to the project on GitHub                         ║', 'color: #888;');
+console.log('%c║  • Sharing with others who might need it                         ║', 'color: #888;');
+console.log('%c║                                                                   ║', 'color: #666;');
+console.log('%c║  Created with love and respect for those we remember            ║', 'color: #666;');
+console.log('%c╚═══════════════════════════════════════════════════════════════════╝', 'color: #2c2c2c; font-weight: bold;');
+console.log('%c\n👨‍💻 Developer Info:', 'color: #2c2c2c; font-weight: bold; font-size: 14px;');
+console.log('%c   GitHub: https://github.com/priesdelly', 'color: #4a4a4a;');
+console.log('%c   Project: Black Ribbon Memorial Overlay', 'color: #4a4a4a;');
+console.log('%c   Version: 1.0.0', 'color: #4a4a4a;');
+console.log('%c   Built: October 2025\n', 'color: #4a4a4a;');
+
+// Cookie Consent Management
+class CookieConsent {
+    constructor() {
+        this.cookieConsent = document.getElementById('cookieConsent');
+        this.acceptBtn = document.getElementById('acceptCookies');
+
+        this.init();
+    }
+
+    init() {
+        // Check if user has already accepted cookies
+        if (!localStorage.getItem('cookieConsent')) {
+            this.showConsent();
+        } else {
+            this.loadGoogleAnalytics();
+        }
+
+        // Handle accept button click
+        this.acceptBtn.addEventListener('click', () => {
+            this.acceptCookies();
+        });
+    }
+
+    showConsent() {
+        this.cookieConsent.classList.add('show');
+    }
+
+    hideConsent() {
+        this.cookieConsent.classList.remove('show');
+    }
+
+    acceptCookies() {
+        localStorage.setItem('cookieConsent', 'accepted');
+        this.hideConsent();
+        this.loadGoogleAnalytics();
+    }
+
+    loadGoogleAnalytics() {
+        // TODO: Add Google Analytics tracking ID here
+    }
+}
+
+// Initialize the application when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new MemorialOverlay();
+    new CookieConsent();
+});

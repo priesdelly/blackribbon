@@ -1,0 +1,56 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+ "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<!--
+  ╔═══════════════════════════════════════════════════════════╗
+  ║  Black Ribbon Memorial Overlay - SVG Asset               ║
+  ║  Powered by Priesdelly                                   ║
+  ║  © 2025 - Created with respect and remembrance           ║
+  ║  GitHub: github.com/priesdelly                           ║
+  ║  ─────────────────────────────────────────────────────── ║
+  ║  This SVG is part of the Black Ribbon Memorial project   ║
+  ║  A tool for adding memorial ribbons to images            ║
+  ║  Used with love and respect for those we remember 🕯️     ║
+  ╚═══════════════════════════════════════════════════════════╝
+-->
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="240.000000pt" height="238.000000pt" viewBox="0 0 240.000000 238.000000"
+ preserveAspectRatio="xMidYMid meet">
+<metadata>
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+           xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <rdf:Description>
+      <dc:creator>Priesdelly</dc:creator>
+      <dc:title>Black Ribbon Memorial</dc:title>
+      <dc:date>2025-10-25</dc:date>
+      <dc:description>Memorial ribbon for tribute images - Powered by Priesdelly</dc:description>
+      <dc:rights>© 2025 Priesdelly. Created with respect and remembrance.</dc:rights>
+      <dc:identifier>blackribbin-memorial-overlay-v1</dc:identifier>
+    </rdf:Description>
+  </rdf:RDF>
+</metadata>
+<!-- Original SVG Path Data -->
+<g transform="translate(0.000000,238.000000) scale(0.100000,-0.100000)">
+<!-- White background circle with white border -->
+<circle cx="1200" cy="1190" r="1200" fill="#ffffff" stroke="#ffffff" stroke-width="10"/>
+<!-- Black ribbon on top of white background -->
+<g fill="#000000" stroke="none">
+<!-- Path definitions - Memorial ribbon shape designed by Priesdelly -->
+<path d="M1012 2295 c-435 -79 -775 -388 -889 -810 -25 -91 -27 -116 -27 -285
+-1 -171 1 -192 26 -282 39 -138 79 -228 153 -338 153 -230 387 -393 660 -462
+130 -33 390 -33 520 0 200 50 367 143 513 286 217 210 332 484 333 791 2 551
+-379 1004 -925 1100 -106 18 -263 18 -364 0z m378 -81 c508 -96 871 -567 836
+-1083 -25 -368 -246 -696 -581 -863 -147 -73 -273 -102 -450 -102 -134 0 -202
+10 -315 46 -305 98 -571 364 -668 668 -40 128 -47 173 -46 325 1 127 5 165 27
+246 103 388 403 677 787 759 109 24 299 26 410 4z"/>
+<path d="M1056 2036 c-106 -45 -151 -107 -202 -281 -29 -101 -35 -219 -15
+-295 6 -25 48 -120 93 -212 l81 -166 -44 -72 c-188 -303 -217 -355 -209 -375
+4 -11 34 -75 66 -143 l59 -123 140 215 c77 119 145 216 150 216 6 0 67 -87
+138 -193 70 -105 136 -203 146 -216 l18 -24 72 148 71 148 -38 61 c-21 34 -85
+131 -141 217 l-101 156 75 154 c113 233 125 307 81 483 -46 178 -89 246 -189
+298 -66 34 -176 36 -251 4z m273 -251 c34 -15 61 -34 61 -41 0 -46 -124 -295
+-183 -368 l-23 -28 -51 83 c-73 121 -173 304 -173 317 0 14 30 31 100 54 79
+26 188 19 269 -17z"/>
+</g>
+</g>
+</svg>

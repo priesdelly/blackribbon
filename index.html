@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Ribbon Memorial Overlay</title>
+    <meta name="description" content="Add memorial ribbons to images with respect - Powered by Priesdelly">
+    <meta name="author" content="Priesdelly">
+    <meta name="creator" content="Priesdelly - github.com/priesdelly">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<!--
+  ╔═══════════════════════════════════════════════════════════════════╗
+  ║         Black Ribbon Memorial Overlay - Web Application           ║
+  ║                    Powered by Priesdelly                          ║
+  ║                 © 2025 - github.com/priesdelly                    ║
+  ║                                                                    ║
+  ║  A respectful tool for adding memorial ribbons to images          ║
+  ║  Built with privacy and dignity in mind                           ║
+  ║  All processing happens locally in your browser                   ║
+  ║                                                                    ║
+  ║  Features:                                                         ║
+  ║  • Client-side processing only                                    ║
+  ║  • No data collection or transmission                             ║
+  ║  • Responsive design for all devices                              ║
+  ║  • Grayscale filter support                                       ║
+  ║  • Download memorial images                                       ║
+  ║                                                                    ║
+  ║  Created with love and respect for those we remember 🕯️           ║
+  ╚═══════════════════════════════════════════════════════════════════╝
+-->
+<body>
+    <div class="container">
+
+        <main>
+            <div class="canvas-container">
+                <canvas id="mainCanvas" width="800" height="600"></canvas>
+                <div id="ribbonOverlay" class="ribbon-overlay">
+                    <img id="ribbonImage" src="assets/black-ribbon-01.svg" alt="Black Ribbon" draggable="false">
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3>Image Upload <span class="subtitle">(อัปโหลดรูปภาพ)</span></h3>
+                    <input type="file" id="imageUpload" accept="image/jpeg,image/jpg,image/png,image/webp">
+                    <button id="clearImage" class="btn-secondary">Clear Image <span class="btn-subtitle">(ล้างรูป)</span></button>
+                </div>
+
+                <div class="control-group">
+                    <h3>Ribbon Controls <span class="subtitle">(ปรับโบว์ไว้ทุกข์)</span></h3>
+                    <label for="ribbonSize">Size <span class="label-subtitle">(ขนาด)</span>: <span id="sizeValue">150%</span></label>
+                    <input type="range" id="ribbonSize" min="10" max="200" value="150">
+                </div>
+
+                <div class="control-group">
+                    <h3>Grayscale Filter <span class="subtitle">(ฟิลเตอร์ขาวดำ)</span></h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="grayscaleToggle">
+                        <span class="checkbox-text">Enable Grayscale <span class="label-subtitle">(เปิดโหมดขาวดำ)</span></span>
+                    </label>
+                    <label for="grayscaleIntensity">Intensity <span class="label-subtitle">(ความเข้ม)</span>: <span id="intensityValue">100%</span></label>
+                    <input type="range" id="grayscaleIntensity" min="0" max="100" value="100" disabled>
+                </div>
+
+                <div class="control-group">
+                    <button id="downloadBtn" class="btn-primary" disabled>Download Memorial Image<br><span class="btn-subtitle">(ดาวน์โหลดรูปไว้ทุกข์)</span></button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>All processing is done locally in your browser. No data is sent to any server.<br>
+            <span class="footer-subtitle">ประมวลผลทั้งหมดทำในเบราว์เซอร์ของคุณ ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์ใดๆ</span></p>
+        </footer>
+    </div>
+
+    <!-- Cookie Consent Popup -->
+    <div id="cookieConsent" class="cookie-consent">
+        <div class="cookie-content">
+            <p class="cookie-title">🍪 Cookie Policy</p>
+            <p class="cookie-text">
+                เว็บไซต์นี้ใช้ Google Analytics เพื่อเก็บสถิติการใช้งานเท่านั้น<br>
+                <span class="cookie-subtitle">This website uses Google Analytics for usage statistics only</span>
+            </p>
+            <button id="acceptCookies" class="cookie-btn">ยอมรับ | Accept</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
