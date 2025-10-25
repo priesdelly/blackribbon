@@ -117,34 +117,90 @@ class MemorialOverlay {
         this.updateValueDisplays();
     }
 
-    handleImageUpload(event) {
+    async handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
 
-        if (!file.type.match('image.*')) {
-            alert('Please select a valid image file (JPG, PNG, or WebP)');
+        // Check if it's an image file (including HEIC)
+        const isValidImage = file.type.match('image.*') || 
+                           file.name.toLowerCase().endsWith('.heic') || 
+                           file.name.toLowerCase().endsWith('.heif');
+
+        if (!isValidImage) {
+            alert('Please select a valid image file (JPG, PNG, WebP, or HEIC)');
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            // Set crossOrigin before setting src to avoid CORS issues
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                this.backgroundImage = img;
-                this.resizeCanvasToImage();
-                this.updateCanvas();
-                // Delay to ensure canvas is fully rendered
-                setTimeout(() => {
-                    this.updateRibbonOverlayPosition();
-                    this.updateRibbonDisplay();
-                }, 10);
-                document.getElementById('downloadBtn').disabled = false;
+        try {
+            let imageBlob = file;
+
+            // Convert HEIC/HEIF to JPEG if needed
+            if (file.type === 'image/heic' || file.type === 'image/heif' || 
+                file.name.toLowerCase().endsWith('.heic') || 
+                file.name.toLowerCase().endsWith('.heif')) {
+                
+                console.log('Converting HEIC/HEIF to JPEG...');
+                
+                // Check if heic2any is available
+                if (typeof heic2any === 'undefined') {
+                    alert('HEIC files are not supported in this browser. Please convert to JPG or PNG first.');
+                    return;
+                }
+                
+                // Show loading message
+                const loadingMsg = document.createElement('div');
+                loadingMsg.id = 'heic-loading';
+                loadingMsg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px;border-radius:8px;z-index:9999;font-family:sans-serif;';
+                loadingMsg.innerHTML = 'Converting HEIC image...<br><small>Please wait, this may take a moment.</small>';
+                document.body.appendChild(loadingMsg);
+
+                try {
+                    // Convert HEIC to JPEG using heic2any library
+                    imageBlob = await heic2any({
+                        blob: file,
+                        toType: 'image/jpeg',
+                        quality: 0.9
+                    });
+                    console.log('HEIC conversion successful');
+                } catch (heicError) {
+                    console.error('HEIC conversion failed:', heicError);
+                    alert('Failed to convert HEIC image. Please try converting to JPG or PNG first, or use a different image.');
+                    return;
+                } finally {
+                    // Remove loading message
+                    const loading = document.getElementById('heic-loading');
+                    if (loading) loading.remove();
+                }
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                // Set crossOrigin before setting src to avoid CORS issues
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    this.backgroundImage = img;
+                    this.resizeCanvasToImage();
+                    this.updateCanvas();
+                    // Delay to ensure canvas is fully rendered
+                    setTimeout(() => {
+                        this.updateRibbonOverlayPosition();
+                        this.updateRibbonDisplay();
+                    }, 10);
+                    document.getElementById('downloadBtn').disabled = false;
+                };
+                img.onerror = () => {
+                    console.error('Failed to load converted image');
+                    alert('Failed to load image. Please try again.');
+                };
+                img.src = e.target.result; // This is already a data URL, so no CORS issues
             };
-            img.src = e.target.result; // This is already a data URL, so no CORS issues
-        };
-        reader.readAsDataURL(file);
+            reader.readAsDataURL(imageBlob);
+
+        } catch (error) {
+            console.error('Error handling image upload:', error);
+            alert('Error processing image. Please try again.');
+        }
     }
 
     clearImage() {
