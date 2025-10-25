@@ -418,6 +418,29 @@ footer {
     line-height: 1.6;
 }
 
+.footer-source {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 0.8rem;
+}
+
+.footer-source a {
+    color: #6a6a6a;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.footer-source a:hover {
+    color: #2c2c2c;
+    opacity: 1;
+    text-decoration: underline;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .container {
