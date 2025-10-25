@@ -32,7 +32,7 @@
 <!-- Original SVG Path Data -->
 <g transform="translate(0.000000,238.000000) scale(0.100000,-0.100000)">
 <!-- White background circle with white border -->
-<circle cx="1200" cy="1190" r="1200" fill="#ffffff" stroke="#ffffff" stroke-width="10"/>
+<circle cx="1200" cy="1195" r="1160" fill="#ffffff" />
 <!-- Black ribbon on top of white background -->
 <g fill="#000000" stroke="none">
 <!-- Path definitions - Memorial ribbon shape designed by Priesdelly -->
