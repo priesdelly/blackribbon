@@ -79,6 +79,10 @@ class MemorialOverlay {
         this.grayscaleEnabled = false;
         this.grayscaleIntensity = 100;
 
+        // Debounce timer for grayscale updates
+        this.grayscaleUpdateTimer = null;
+        this.lastGrayscaleUpdate = 0;
+
         // Load ribbon image as data URL to avoid CORS/taint issues
         this.loadRibbonAsDataURL();
 
@@ -396,7 +400,27 @@ class MemorialOverlay {
     updateGrayscaleIntensity(value) {
         this.grayscaleIntensity = parseInt(value);
         document.getElementById('intensityValue').textContent = value + '%';
-        this.updateCanvas();
+
+        // Throttle canvas updates to prevent stuttering on mobile
+        const now = Date.now();
+        const timeSinceLastUpdate = now - this.lastGrayscaleUpdate;
+
+        // Clear any pending update
+        if (this.grayscaleUpdateTimer) {
+            clearTimeout(this.grayscaleUpdateTimer);
+        }
+
+        // If enough time has passed, update immediately (throttle)
+        if (timeSinceLastUpdate > 100) { // Update max every 100ms
+            this.lastGrayscaleUpdate = now;
+            this.updateCanvas();
+        } else {
+            // Otherwise, schedule an update (debounce)
+            this.grayscaleUpdateTimer = setTimeout(() => {
+                this.lastGrayscaleUpdate = Date.now();
+                this.updateCanvas();
+            }, 50); // Wait 50ms after last input
+        }
     }
 
     startDrag(e) {
